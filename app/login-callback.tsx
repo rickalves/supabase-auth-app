@@ -1,54 +1,55 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View, Alert } from 'react-native';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import { supabase } from '../utils/supabase';
 
-const createSessionFromUrl = async (url: string) => {
-  const { params, errorCode } = QueryParams.getQueryParams(url);
-
-  if (errorCode) {
-    Alert.alert('Erro no login', errorCode);
-    return;
-  }
-
-  const { access_token, refresh_token } = params;
-
-  if (!access_token || !refresh_token) {
-    Alert.alert('Tokens ausentes');
-    return;
-  }
-
-  const { error } = await supabase.auth.setSession({
-    access_token,
-    refresh_token,
-  });
-
-  if (error) {
-    Alert.alert('Erro ao salvar sessão', error.message);
-    return;
-  }
-
-  return true;
-};
-
 export default function LoginCallback() {
   const { url } = useLocalSearchParams();
   const router = useRouter();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle');
 
   useEffect(() => {
-    if (typeof url === 'string') {
-      createSessionFromUrl(url).then(() => {
-        console.log('LoginCallback: Login bem-sucedido!');
-        router.replace('/'); // ou redireciona para a Home / Dashboard
+    const validateAndCreateSession = async () => {
+      if (!url || Array.isArray(url)) return;
+
+      const { params, errorCode } = QueryParams.getQueryParams(url);
+      const { access_token, refresh_token } = params ?? {};
+
+      if (errorCode || !access_token || !refresh_token) {
+        setStatus('idle');
+        return; // evita redirecionamento em chamadas inválidas
+      }
+
+      setStatus('loading');
+
+      const { error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
       });
-    }
+
+      if (error) {
+        Alert.alert('Erro ao salvar sessão', error.message);
+        setStatus('error');
+        return;
+      }
+
+      setStatus('success');
+      router.replace('/home');
+    };
+
+    validateAndCreateSession();
   }, [url]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" />
-      <Text style={{ marginTop: 16 }}>Fazendo login...</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+      {(status === 'loading' || status === 'idle') && <ActivityIndicator size="large" />}
+      <Text style={{ marginTop: 16, fontSize: 16 }}>
+        {status === 'loading' && 'Fazendo login...'}
+        {status === 'success' && 'Login realizado! Redirecionando...'}
+        {status === 'error' && 'Houve um erro no login.'}
+        {status === 'idle' && 'Aguardando confirmação de login...'}
+      </Text>
     </View>
   );
 }
