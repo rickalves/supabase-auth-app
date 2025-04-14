@@ -1,28 +1,54 @@
-import { useEffect } from 'react'
-import { View, Text, ActivityIndicator } from 'react-native'
-import * as Linking from 'expo-linking'
-import { supabase } from '../utils/supabase'
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, Text, View, Alert } from 'react-native';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
+import { supabase } from '../utils/supabase';
+
+const createSessionFromUrl = async (url: string) => {
+  const { params, errorCode } = QueryParams.getQueryParams(url);
+
+  if (errorCode) {
+    Alert.alert('Erro no login', errorCode);
+    return;
+  }
+
+  const { access_token, refresh_token } = params;
+
+  if (!access_token || !refresh_token) {
+    Alert.alert('Tokens ausentes');
+    return;
+  }
+
+  const { error } = await supabase.auth.setSession({
+    access_token,
+    refresh_token,
+  });
+
+  if (error) {
+    Alert.alert('Erro ao salvar sessão', error.message);
+    return;
+  }
+
+  return true;
+};
 
 export default function LoginCallback() {
+  const { url } = useLocalSearchParams();
+  const router = useRouter();
+
   useEffect(() => {
-    const handleDeepLink = async () => {
-      const url = await Linking.getInitialURL()
-      console.log('URL recebida:', url)
-      if (url) {
-        const { error } = await supabase.auth.exchangeCodeForSession(url)
-        console.log('Sessão trocada!')
-
-        if (error) console.log('Erro:', error.message)
-      }
+    if (typeof url === 'string') {
+      createSessionFromUrl(url).then(() => {
+        console.log('LoginCallback: Login bem-sucedido!');
+        router.replace('/'); // ou redireciona para a Home / Dashboard
+      });
     }
-
-    handleDeepLink()
-  }, [])
+  }, [url]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator />
-      <Text>Fazendo login...</Text>
+      <ActivityIndicator size="large" />
+      <Text style={{ marginTop: 16 }}>Fazendo login...</Text>
     </View>
-  )
+  );
 }
