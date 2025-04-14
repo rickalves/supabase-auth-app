@@ -1,10 +1,17 @@
 {
   "expo": {
-    "scheme": "acme",
-    "plugins": [
-      "expo-router"
-    ],
-    "name": "supabase-deeplink-test",
-    "slug": "supabase-deeplink-test"
+    "name": "SupabaseDeepLink",
+    "slug": "supabase-deeplink",
+    "scheme": "supabasetest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "extra": {
+      "eas": {
+        "projectId": "bd0c27c4-9991-4525-9037-64182cc7834b"
+      }
+    },
+    "android": {
+      "package": "com.rickalves.supabasedeeplink"
+    }
   }
 }
