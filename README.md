@@ -1,15 +1,11 @@
 
 ---
-
-```markdown
 # 📱 Supabase Deep Link Auth (React Native + Expo)
 
 Este é um projeto de exemplo utilizando **Supabase Auth** com **Deep Linking** em **React Native (Expo)**, utilizando o **Expo Router** e suporte a autenticação via:
 
 - 🔐 Magic Link (Link Mágico por E-mail)
-- 🧠 OAuth (ex: GitHub)
-- 🌐 Funciona tanto na **Web** quanto em **Mobile (Android/iOS)**
-
+- 🧠 OAuth (ex: Google)
 ---
 
 ## ⚙️ Tecnologias utilizadas
@@ -70,7 +66,7 @@ npx eas build --profile development --platform android
 Instale o app no dispositivo e use:
 
 - **Magic Link** → receba o e-mail e clique no link
-- **OAuth GitHub** → fluxo de navegador com retorno via `supabasetest://`
+- **OAuth Google** → fluxo de navegador com retorno via `supabasetest://`
 
 ---
 
@@ -78,7 +74,7 @@ Instale o app no dispositivo e use:
 
 ```
 app/
-├─ index.tsx            → Tela de login (Magic Link + GitHub)
+├─ index.tsx            → Tela de login (Magic Link + Google)
 ├─ login-callback.tsx   → Tratamento do Deep Link e criação de sessão
 ├─ home.tsx             → Página após login, exibe nome do usuário
 ├─ _layout.tsx          → Layout global com <Slot />
